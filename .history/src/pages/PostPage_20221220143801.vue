@@ -1,0 +1,140 @@
+<!-- eslint-disable vuejs-accessibility/click-events-have-key-events -->
+<template>
+  <div>
+    <div class="header">
+      <h1>Страница с новостями</h1>
+    </div>
+    <div class="search-select">
+      <my-input
+        :model-value="searchQuery"
+        @update:model-value="setSearchQuery"
+        placeholder="Поиск..."
+      />
+      <my-select
+        :model-value="selectedSort"
+        @update:model-value="setSelectedSort"
+        :options="sortOptions"
+      />
+    </div>
+    <my-dialog
+      v-if="this.error"
+      :show="visible"
+      @update:show="setVisible"
+    >
+      <h1 style="color: brown"> {{ error }} </h1>
+    </my-dialog>
+
+    <post-list :posts="slicePost" v-if="!isPostLoading" />
+    <div v-else>Идет загрузка...</div>
+    <div class="page__wrapper">
+      <div v-for="pageNumber in countPage" :key="pageNumber" class="page" :class="{
+        'current-page': page === pageNumber
+      }" @click="setPage(pageNumber)">
+        {{ pageNumber }}
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import PostList from '@/components/PostList.vue';
+import {
+  mapState,
+  mapActions,
+  mapGetters,
+  mapMutations,
+} from 'vuex';
+
+export default {
+
+  components: {
+    PostList,
+  },
+  watch: {
+    error() {
+      if (this.error) {
+        this.setVisible(true);
+        this.set
+      }
+    },
+  },
+  methods: {
+    ...mapMutations({
+      setPage: 'post/setPage',
+      setSearchQuery: 'post/setSearchQuery',
+      setSelectedSort: 'post/setSelectedSort',
+      setVisible: 'dialog/setVisible',
+      setType: 'dialog/setType',
+    }),
+    ...mapActions({
+      fetchPost: 'post/fetchPost',
+    }),
+  },
+  beforeMount() {
+    this.fetchPost();
+  },
+
+  computed: {
+    ...mapState({
+      limit: (state) => state.post.limit,
+      page: (state) => state.post.page,
+      isPostLoading: (state) => state.post.isLoading,
+      error: (state) => state.post.error,
+      visible: (state) => state.dialog.visible,
+      type: (state) => state.dialog.type,
+      searchQuery: (state) => state.post.searchQuery,
+      selectedSort: (state) => state.post.selectedSort,
+      sortOptions: (state) => state.post.sortOptions,
+    }),
+    ...mapGetters({
+      countPage: 'post/countPage',
+      slicePost: 'post/slicePost',
+    }),
+  },
+
+  updated() {
+    if (!this.page || this.page > this.countPage) this.setPage(this.countPage);
+  },
+};
+</script>
+
+<style>
+.app__btns {
+  display: flex;
+  justify-content: space-between;
+  margin: 15px 0;
+}
+
+.page__wrapper {
+  display: flex;
+  margin-top: 15px;
+  column-gap: 10px;
+}
+
+.page__wrapper {
+  display: flex;
+  margin-top: 15px;
+}
+
+.page {
+  border: 1px solid black;
+  padding: 10px;
+}
+
+.current-page {
+  border: 2px solid teal;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.search-select {
+  display: flex;
+  align-items: center;
+  margin: 15px 0;
+  column-gap: 20px;
+}
+</style>
